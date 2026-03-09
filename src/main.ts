@@ -1,5 +1,5 @@
 const SCHEME = 'nuimarkets';
-const PATH   = 'login/email';
+const PATH   = 'magic-link';
 
 // Optional: uncomment and set URLs to enable app-not-installed fallback
 // const ANDROID_STORE_URL = 'https://play.google.com/store/apps/details?id=com.nuimarkets.app';
@@ -37,8 +37,8 @@ function redirect(): void {
     return;
   }
 
-  // Redirect to native app via custom scheme
-  window.location.href = `${SCHEME}://${PATH}?token=${encodeURIComponent(token)}`;
+  // Triple slash (empty authority) → GoRouter sees path as /magic-link
+  window.location.href = `${SCHEME}:///${PATH}?token=${encodeURIComponent(token)}`;
 
   // Optional fallback: if the app is not installed, redirect to store after delay
   // setTimeout(() => {
