@@ -3,39 +3,243 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Opening NUI App...</title>
+    <title>NUI Markets</title>
     <style>
-      * { box-sizing: border-box; margin: 0; padding: 0; }
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --color-bg:       #f0f2f5;
+        --color-surface:  #ffffff;
+        --color-primary:  #1a56db;
+        --color-primary-hover: #1446b8;
+        --color-text:     #111827;
+        --color-muted:    #6b7280;
+        --color-error:    #dc2626;
+        --color-border:   #e5e7eb;
+        --color-success:  #16a34a;
+        --radius:         14px;
+        --shadow:         0 4px 24px rgba(0,0,0,0.08);
+      }
+
       body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        background: #f5f5f5;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+        background: var(--color-bg);
+        min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 100vh;
         padding: 24px;
+        -webkit-font-smoothing: antialiased;
       }
+
       .card {
-        background: #fff;
-        border-radius: 12px;
+        background: var(--color-surface);
+        border-radius: var(--radius);
         padding: 40px 32px;
-        max-width: 360px;
+        max-width: 400px;
         width: 100%;
         text-align: center;
-        box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+        box-shadow: var(--shadow);
       }
-      .icon { font-size: 48px; margin-bottom: 16px; }
-      .title { font-size: 20px; font-weight: 600; color: #111; margin-bottom: 8px; }
-      .subtitle { font-size: 14px; color: #666; line-height: 1.5; }
-      .error { color: #d32f2f; }
+
+      /* Logo */
+      .logo {
+        width: 56px;
+        height: 56px;
+        background: var(--color-primary);
+        border-radius: 14px;
+        margin: 0 auto 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: #fff;
+        font-weight: 800;
+        letter-spacing: -1px;
+      }
+
+      .icon { font-size: 44px; margin-bottom: 16px; line-height: 1; }
+
+      .title {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--color-text);
+        margin-bottom: 10px;
+        line-height: 1.3;
+      }
+
+      .subtitle {
+        font-size: 15px;
+        color: var(--color-muted);
+        line-height: 1.6;
+        margin-bottom: 0;
+      }
+
+      .subtitle.error { color: var(--color-error); }
+
+      /* Spinner */
+      .spinner {
+        width: 44px;
+        height: 44px;
+        border: 3px solid var(--color-border);
+        border-top-color: var(--color-primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 20px;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      /* Buttons */
+      .actions { margin-top: 28px; display: flex; flex-direction: column; gap: 12px; }
+
+      .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 14px 20px;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        text-decoration: none;
+        transition: opacity 0.15s, background 0.15s;
+        width: 100%;
+      }
+      .btn:active { opacity: 0.85; }
+
+      .btn-primary {
+        background: var(--color-primary);
+        color: #fff;
+      }
+      .btn-primary:hover { background: var(--color-primary-hover); }
+
+      .btn-secondary {
+        background: var(--color-bg);
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
+      }
+      .btn-secondary:hover { background: #e8eaed; }
+
+      .btn-store {
+        background: #111;
+        color: #fff;
+        font-size: 14px;
+      }
+      .btn-store:hover { background: #2a2a2a; }
+
+      .btn-store-ios { background: #111; }
+      .btn-store-android { background: #01875f; }
+      .btn-store-android:hover { background: #016c4c; }
+
+      /* Divider */
+      .divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 4px 0;
+        color: var(--color-muted);
+        font-size: 13px;
+      }
+      .divider::before, .divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--color-border);
+      }
+
+      /* Clipboard badge */
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        color: var(--color-success);
+        font-size: 13px;
+        font-weight: 500;
+        padding: 6px 12px;
+        border-radius: 20px;
+        margin-bottom: 20px;
+      }
+
+      /* Hidden */
+      [hidden] { display: none !important; }
     </style>
   </head>
   <body>
-    <div class="card">
-      <div class="icon" id="icon">⏳</div>
-      <div class="title" id="title">Opening NUI App...</div>
-      <div class="subtitle" id="subtitle">You will be redirected automatically.</div>
+    <div class="card" id="card">
+      <div class="logo">N</div>
+
+      <!-- STATE: loading -->
+      <div id="state-loading">
+        <div class="spinner"></div>
+        <div class="title">Opening NUI App&hellip;</div>
+        <div class="subtitle">You will be redirected automatically.</div>
+      </div>
+
+      <!-- STATE: no-token error -->
+      <div id="state-error" hidden>
+        <div class="icon">⚠️</div>
+        <div class="title">Invalid Link</div>
+        <div class="subtitle error">This link is missing the required token.<br>Please request a new magic link.</div>
+      </div>
+
+      <!-- STATE: desktop (non-mobile) -->
+      <div id="state-desktop" hidden>
+        <div class="icon">📱</div>
+        <div class="title">Open on your mobile</div>
+        <div class="subtitle">This link is meant for the NUI mobile app.<br>Please open it from your phone.</div>
+      </div>
+
+      <!-- STATE: app not installed (magic link fallback) -->
+      <div id="state-not-installed" hidden>
+        <div class="icon">📲</div>
+        <div class="title">NUI App not found</div>
+        <div class="subtitle">Get the app to continue, or sign in on the web.</div>
+        <div class="actions">
+          <a id="btn-appstore" class="btn btn-store btn-store-ios" href="#" hidden>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            App Store
+          </a>
+          <a id="btn-playstore" class="btn btn-store btn-store-android" href="#" hidden>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76a2 2 0 0 1-.87-1.94V2.18A2 2 0 0 1 3.18.42l.11-.07 12.02 11.72-.11.1-12.02 11.59zm14.41-8.36-2.98-1.71-1.7 1.66 2.98 2.91 1.7-2.86zM1.36 1.13A2 2 0 0 0 1 2.18v19.64a2 2 0 0 0 .36 1.05L14.38 12 1.36 1.13zm18.58 8.25-2.55-1.47-1.93 1.88 1.93 1.88 2.57-1.49a1.15 1.15 0 0 0 0-1.8h-.02zM5.09.88 16.61 7.5l-2.23 2.18L3.19.42 5.09.88z"/></svg>
+            Google Play
+          </a>
+          <div class="divider">or</div>
+          <a id="btn-web-fallback" class="btn btn-secondary" href="#">
+            Continue on web →
+          </a>
+        </div>
+      </div>
+
+      <!-- STATE: invite (from fraiche "get the app" banner) -->
+      <div id="state-invite" hidden>
+        <div class="icon">🎉</div>
+        <div class="title">Get the NUI App</div>
+        <div class="subtitle">Download the app and you'll be signed in automatically.</div>
+        <div class="badge" id="badge-clipboard" hidden>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          Login ready — just open the app
+        </div>
+        <div class="badge" id="badge-clipboard-fail" hidden>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+          Open the app and sign in manually
+        </div>
+        <div class="actions">
+          <a id="btn-invite-appstore" class="btn btn-store btn-store-ios" href="#" hidden>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            Download on App Store
+          </a>
+          <a id="btn-invite-playstore" class="btn btn-store btn-store-android" href="#" hidden>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76a2 2 0 0 1-.87-1.94V2.18A2 2 0 0 1 3.18.42l.11-.07 12.02 11.72-.11.1-12.02 11.59zm14.41-8.36-2.98-1.71-1.7 1.66 2.98 2.91 1.7-2.86zM1.36 1.13A2 2 0 0 0 1 2.18v19.64a2 2 0 0 0 .36 1.05L14.38 12 1.36 1.13zm18.58 8.25-2.55-1.47-1.93 1.88 1.93 1.88 2.57-1.49a1.15 1.15 0 0 0 0-1.8h-.02zM5.09.88 16.61 7.5l-2.23 2.18L3.19.42 5.09.88z"/></svg>
+            Get it on Google Play
+          </a>
+        </div>
+      </div>
     </div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
